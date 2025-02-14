@@ -42,6 +42,8 @@ string IntToStr(int n)
 int main()
 {
 	
+    cout << "are you running?" << endl;
+
 	double B_zero = 0.5;    // [T] - Magnetic field to achieve
 	double tol = 10e-6;    // Magnetic field homogeneity tolerance
 
@@ -138,7 +140,6 @@ int main()
 		}
 	zc0 = zc0 + step;	
 	}
-
 
 
 	vector<double> CoilsZ;
