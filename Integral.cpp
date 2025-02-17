@@ -208,13 +208,13 @@ double Integral::N1(double c, double d)
 			v = l;
 			l = s;
 			iter++;
+            //cout << "i = " << i << ", fabs(l-v) = " << fabs(l-v) << ", iterations: " << iter << endl;
 			if (iter > MAX_ITER) {
 				cout << "Warning: Maximum iterations reached for i = " << i << ". Using best value found for fabs(l-v): " << fabs(l-v) <<  endl;
 				break;
 			}
 		}
 		while(fabs(l-v)>0.0000000000000001);
-        //cout << "i = " << i << ", fabs(l-v) = " << fabs(l-v) << ", iterations: " << iter << endl;
 		y[i]=l;
 		w[i]=2/((1-pow(l,2))*(dn(a,n,m,l)*dn(a,n,m,l)));
 	}
@@ -297,7 +297,7 @@ double Integral::N2(double c, double d)
 		l=z[i];
 		int iter = 0;
 		const int MAX_ITER = 1000;  // Maximum number of iterations
-		const double DAMPING = 0.95;  // Dampening factor to reduce oscillations
+		const double DAMPING = 1;  // Dampening factor to reduce oscillations
 		do
 		{
 			double correction = pn(a,n,m,l)/dn(a,n,m,l);
