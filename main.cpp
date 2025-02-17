@@ -42,7 +42,7 @@ string IntToStr(int n)
 int main()
 {
 	
-    cout << "are you running?" << endl;
+    cout << "Defining initial parametes" << endl;
 
 	double B_zero = 0.5;    // [T] - Magnetic field to achieve
 	double tol = 10e-6;    // Magnetic field homogeneity tolerance
@@ -57,12 +57,13 @@ int main()
 	double zmax = 42;
 	double rmin = 10;	// [cm] r-domain
 	double rmax = 48;
-	double step = 2;
+	double step = 2; // BIGGER STEP -> LESS COILS (it was 2 before)
 
 	
+    cout << "Defining some vectors" << endl;
 	
 	// ***** Define the Nt target points *****
-	int nbPoints = 40;
+	int nbPoints = 40; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
 	vector<double> Xtarget;
 	vector<double> Ytarget;
 	vector<double> PolarR;
@@ -89,6 +90,7 @@ int main()
 	for (int i = 0; i<61 ; i++)
 		AREA_Z.push_back(Z_init + i*0.01);
 
+    cout << "Ellipse" << endl;
 	
 	Ellipse *ellipse;
 	ellipse = new Ellipse(0, 0, 0.2, 0.2, 0, nbPoints, Xtarget, Ytarget, PolarR, PolarTheta);
@@ -110,7 +112,10 @@ int main()
 		Xt[i]= abs(Xtarget[i]);
 	
 	int Nt = Zt.size();	
+    cout << "Nt: " << Nt << endl;
 	
+    cout << "Sampling points" << endl;
+
 	// Sampling a set of point inside the target volume
 	Ellipse *ellipse2;
 	vector<double> Zt_in;
@@ -123,6 +128,7 @@ int main()
 	Xt_in.insert(Xt_in.end(), Xtarget.begin(), Xtarget.end());	
 	}
 	int Nt_in = Zt_in.size();
+
 	
 	vector<double> NPZ;		//North pole Z
 	vector<double> NPR;		//North pole R
@@ -141,6 +147,7 @@ int main()
 	zc0 = zc0 + step;	
 	}
 
+    cout << "More vectors" << endl;
 
 	vector<double> CoilsZ;
 	vector<double> CoilsR;
@@ -165,6 +172,7 @@ int main()
 	
 	int Ns = cross_sections.size();
 	
+    cout << "initialize matrix" << endl;
 
 	vector<vector<vector<double> > > AMNS;
 	AMNS.resize(Nt);
@@ -207,6 +215,7 @@ int main()
 	// }
 
 
+    cout << "Compute matrix" << endl;
 	
  	BFieldThick *field;
 	for(int m = 0; m < Nt; m++){
@@ -215,9 +224,17 @@ int main()
 				double Bz = 0;
 				double Br = 0;
 				double J = (1e7)/cross_sections[s];
+                //cout << "m: " << m << ", n: " << n << ", s: " << s << endl;  
+                // It gets stuck for m=1, n=0 and s=0
 				field = new BFieldThick(J, CoilsR[n], widths[s], widths[s]/Gamma, Xt[m], Zt[m], 0, CoilsZ[n], Bz, Br);
 
 				AMNS[m][n][s] = Bz;
+
+                cout << "m: " << m << ", n: " << n << ", s: " << s << endl;  
+
+                if (m == 1 ){
+                    //cout << "We got m = 1" <<endl;
+                }
 
 			}
 		}
@@ -225,6 +242,8 @@ int main()
 	
 	delete field; 	
 	
+    cout << "Excel stuff" << endl;
+
 	ofstream ExcelFile3;
     ExcelFile3.open("AMNS.csv");
 	 
