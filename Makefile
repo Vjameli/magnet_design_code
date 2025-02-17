@@ -1,5 +1,5 @@
 LIB=-L/opt/ibm/ILOG/CPLEX_Studio2211/cplex/lib/x86-64_linux/static_pic/  -L/opt/ibm/ILOG/CPLEX_Studio2211/concert/lib/x86-64_linux/static_pic/
-INC=-I/opt/ibm/ILOG/CPLEX_Studio2211/cplex/include -I/opt/ibm/ILOG/CPLEX_Studio2211/concert/include 
+INC=-I/opt/ibm/ILOG/CPLEX_Studio2211/cplex/include -I/opt/ibm/ILOG/CPLEX_Studio2211/concert/include
 
 CFLAGS=-Wall $(LIB) $(INC) -std=c++0x -m64 -g  -fno-strict-aliasing #-O3
 CPPFLAGS=-DNDEBUG -DIL_STD
