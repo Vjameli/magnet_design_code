@@ -42,7 +42,7 @@ string IntToStr(int n)
 int main()
 {
 	
-    cout << "Defining initial parametes" << endl;
+    //cout << "Defining initial parametes" << endl;
 
 	double B_zero = 0.5;    // [T] - Magnetic field to achieve
 	double tol = 10e-6;    // Magnetic field homogeneity tolerance
@@ -60,7 +60,7 @@ int main()
 	double step = 6; // BIGGER STEP -> LESS COILS (it was 2 before)
 
 	
-    cout << "Defining some vectors" << endl;
+    //cout << "Defining some vectorsihaihaihaih" << endl;
 	
 	// ***** Define the Nt target points *****
 	int nbPoints = 2; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
@@ -90,7 +90,7 @@ int main()
 	for (int i = 0; i<61 ; i++)
 		AREA_Z.push_back(Z_init + i*0.01);
 
-    cout << "Ellipse" << endl;
+    //cout << "Ellipse" << endl;
 	
 	Ellipse *ellipse;
 	ellipse = new Ellipse(0, 0, 0.2, 0.2, 0, nbPoints, Xtarget, Ytarget, PolarR, PolarTheta);
@@ -114,7 +114,7 @@ int main()
 	int Nt = Zt.size();	
     cout << "Nt: " << Nt << endl;
 	
-    cout << "Sampling points" << endl;
+    //cout << "Sampling points" << endl;
 
 	// Sampling a set of point inside the target volume
 	Ellipse *ellipse2;
@@ -147,7 +147,7 @@ int main()
 	zc0 = zc0 + step;	
 	}
 
-    cout << "More vectors" << endl;
+    //cout << "More vectors" << endl;
 
 	vector<double> CoilsZ;
 	vector<double> CoilsR;
@@ -172,7 +172,7 @@ int main()
 	
 	int Ns = cross_sections.size();
 	
-    cout << "initialize matrix" << endl;
+    //cout << "initialize matrix" << endl;
 
 	vector<vector<vector<double> > > AMNS;
 	AMNS.resize(Nt);
@@ -215,7 +215,7 @@ int main()
 	// }
 
 
-    cout << "Compute matrix" << endl;
+    //cout << "Compute matrix" << endl;
 	
  	BFieldThick *field;
 	for(int m = 0; m < Nt; m++){
@@ -225,12 +225,12 @@ int main()
 				double Br = 0;
 				double J = (1e7)/cross_sections[s];
                 //cout << "m: " << m << ", n: " << n << ", s: " << s << endl;  
-                // It gets stuck for m=1, n=0 and s=0
+                // It gets stuck for m=1, n=0 and s=0 (not anymore!)
 				field = new BFieldThick(J, CoilsR[n], widths[s], widths[s]/Gamma, Xt[m], Zt[m], 0, CoilsZ[n], Bz, Br);
 
 				AMNS[m][n][s] = Bz;
 
-                cout << "m: " << m << ", n: " << n << ", s: " << s << endl;  
+                //cout << "m: " << m << ", n: " << n << ", s: " << s << endl;  
 
                 if (m == 1 ){
                     //cout << "We got m = 1" <<endl;
@@ -437,7 +437,7 @@ do {
 		 }
 	 }
 
-    cout << "Defining some more vectors" << endl;
+    //cout << "Defining some more vectors" << endl;
 
 		vector<vector<double> > BzMatrix;
 		vector<vector<double> > BxMatrix;
@@ -452,7 +452,7 @@ do {
 			}
 		}
 		
-    cout << "Some other stuff" << endl;
+    //cout << "Some other stuff" << endl;
 	 
 	  	double XMIN = 0.0;
 		double ZMIN = -0.3;
@@ -465,7 +465,7 @@ do {
 			for(int j = 0; j < 66; j++)
 				B_MATRIX[i][j] = 0;
 		
-    cout << "More other stuff with the matrix" << endl;
+    //cout << "More other stuff with the matrix" << endl;
 
 	 	 for(int n = 0; n < Nc; n++){
 		 for(int s = 0; s < Ns; s++){

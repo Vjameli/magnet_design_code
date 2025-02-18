@@ -35,6 +35,8 @@ BFieldThick_Matrix::BFieldThick_Matrix(double J0, double r0, double dr, double d
 
 
 double z1 = zmin-zshift;
+cout << BzMatrix.size() << endl;
+cout << BzMatrix[0].size() << endl;
 for (unsigned int in1 = 0; in1 <  BzMatrix.size(); in1++){   // defines the relative distance b/w coil and target point
     double x = xmin-xshift;
 	for(unsigned int in2 = 0; in2 < BzMatrix[0].size(); in2++){	// defines the relative lateral shift from z-axis b/w coil and target point
@@ -54,11 +56,11 @@ for (unsigned int in1 = 0; in1 <  BzMatrix.size(); in1++){   // defines the rela
 			int3 = new Integral(r0+dr/2,dz/2,r,z);
 			int4 = new Integral(r0-dr/2,dz/2,r,z);
 			
-            cout << "Bfieldthick matrix dAdZ" << endl;
+            //cout << "Bfieldthick matrix dAdZ" << endl;
 
 			double dAdz = int1->N1(0.0, PI) - int2->N1(0.0, PI) - int3->N1(0.0, PI) + int4->N1(0.0, PI);
 
-            cout << "Bfieldthick matrix dAdZ after" << endl;
+            //cout << "Bfieldthick matrix dAdZ after" << endl;
             //dAdz = N1Integral(r0+dr/2,-dz/2,r,z) - N1Integral(r0-dr/2,-dz/2,r,z) - N1Integral(r0+dr/2,dz/2,r,z) + N1Integral(r0-dr/2,dz/2,r,z);
 			//double a1 = int3->N2(0.0, PI);
 			//double a2 = int4->N2(0.0, PI);
@@ -92,7 +94,7 @@ for (unsigned int in1 = 0; in1 <  BzMatrix.size(); in1++){   // defines the rela
 
 void BFieldThick_Matrix::Polar(double x, double y, double z, double& r, double& theta, double& z1)
 {
-    cout << "maybe polar?" << endl;
+    //cout << "maybe polar?" << endl;
 	r = sqrt((pow(x,2))+(pow(y,2)));
 
     theta = atan2(y,x);
