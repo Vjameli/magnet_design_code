@@ -35,8 +35,8 @@ BFieldThick_Matrix::BFieldThick_Matrix(double J0, double r0, double dr, double d
 
 
 double z1 = zmin-zshift;
-cout << BzMatrix.size() << endl;
-cout << BzMatrix[0].size() << endl;
+//cout << BzMatrix.size() << endl;
+//cout << BzMatrix[0].size() << endl;
 for (unsigned int in1 = 0; in1 <  BzMatrix.size(); in1++){   // defines the relative distance b/w coil and target point
     double x = xmin-xshift;
 	for(unsigned int in2 = 0; in2 < BzMatrix[0].size(); in2++){	// defines the relative lateral shift from z-axis b/w coil and target point

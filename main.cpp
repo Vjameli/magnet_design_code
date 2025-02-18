@@ -466,7 +466,7 @@ do {
 				B_MATRIX[i][j] = 0;
 		
     //cout << "More other stuff with the matrix" << endl;
-
+    cout << "Nc = " << Nc << endl;
 	 	 for(int n = 0; n < Nc; n++){
 		 for(int s = 0; s < Ns; s++){
 			 if (SOL[n][s]* 1e7> 1 || -SOL[n][s]* 1e7> 1){
@@ -483,15 +483,16 @@ do {
 				double J = SOL[n][s] * 1e7/cross_sections[s];
 
 				BFieldThick_Matrix *field_Matrix;
-                cout << "maybe the problem is in here???????" << endl;
+                //cout << "maybe the problem is in here???????" << endl;
 				field_Matrix = new BFieldThick_Matrix(J, CoilsR[n], widths[s], widths[s]/Gamma, XMIN, ZMIN, XMAX, ZMAX, 0, CoilsZ[n], STEP, BzMatrix, BxMatrix);
-                cout << "Probably here" << endl;
+                //cout << "Probably here" << endl;
 					for(int i = 0; i < 61; i++)
 						for(int j = 0; j < 66; j++)
 							B_MATRIX[i][j] = B_MATRIX[i][j] + BzMatrix[i][j];
 				delete field_Matrix;
 			 }
 			 }
+                cout << "n = " << n << endl;
 		 } 
 	 
 	 
@@ -643,7 +644,7 @@ do {
      }
 	
      ExcelFile6.close();	 
-
+    cout << "CODE IS DONE" << endl;
 	return 0;
 }
 
