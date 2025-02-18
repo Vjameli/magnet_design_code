@@ -48,11 +48,31 @@ long double Integral::f2(long double x)
 	double g4 = t3*sin(x);
 	double g5 = t2 - t4;
 	double gf = sqrt(g1*g1 + g2);
+
+        /*
+        if (g4 < 0.001){
+            cout << "g4: " << g4 <<endl;
+        }
+        if (g5 < 0.001){
+            cout << "g5: " << g5 <<endl;
+        }
+        if (gf+g5 < 0.001){
+            cout << "gf + g5: " << gf + g5 <<endl;
+        }
+        
+        */
+        
+        //cout << "Debug values in f2() for x=" << x << ":" << endl;
+        //cout << "g1=" << g1 << " g2=" << g2 << " g3=" << g3 << " g4=" << g4 << " g5=" << g5 << " gf=" << gf << endl;
+        //cout << "Denominators: g4*g5=" << (g4*g5) << " gf+g5=" << (gf+g5) << endl;
+        
+
 	double M1 = 2*g5*g3*log(g1+gf) + (0.25)*(3*(g3*g3-g4*g4) - (g1+g3)*(g1+g3))*log((gf-g5)/(gf+g5));
 	double M2 = -2*atan((g1*(g1+gf)+g4*g4)/(g4*g5)) + atan((g5+g1+gf)/g4) - atan((-g5+g1+gf)/g4);
 	
 	d = cos(x)*(M1 + g3*g4*M2 + (0.5)*g5*gf);
 	
+        //cout << "Results: M1=" << M1 << " M2=" << M2 << " d=" << d << endl;
 
 	return d;
 }
@@ -119,6 +139,7 @@ long double Integral::fact(int n)
 //Main Function
 double Integral::N1(double c, double d)
 {
+    //cout << "I entered N1!" << endl;
 	int n,m,i,N;
 	
 	n = 18;
@@ -134,6 +155,7 @@ double Integral::N1(double c, double d)
 	return 0;
 
 
+    //cout << "N1: long double" << endl;
 	long double a[n],y[n],z[n],w[n],l,v,s,g=0,u[n];
 	m = n%2;
 	if(m == 0)
@@ -146,6 +168,7 @@ double Integral::N1(double c, double d)
 	}
 
 
+    //cout << "First for" << endl;
 	for(i=0;i<=N;i++)
 	{
 		a[n-2*i]=(pow(-1,i)*fact(2*n-2*i))/(pow(2,n)*fact(i)*fact(n-i)*fact(n-2*i));
@@ -168,20 +191,36 @@ double Integral::N1(double c, double d)
 	// cout<<endl;
 
 	//Roots of Pn(x)
+    //cout << "N1: for for roots of PN" << endl;
 	for(i=0;i<n;i++)
 	{
+        //cout << "N1: for for roots of PN (inside the for). i = " << i << endl;
 		z[i]=cos(3.14*(i+0.75)/(n+0.5));
+        //cout << "N1: Just computed the cosine, i = " << i << endl;
 		l=z[i];
+		int iter = 0;
+		const int MAX_ITER = 1000;  // Maximum number of iterations
+		const double DAMPING = 0.5;  // Dampening factor to reduce oscillations
 		do
 		{
-			s=l-(pn(a,n,m,l)/dn(a,n,m,l));
-			v=l;
-			l=s;
+			double correction = pn(a,n,m,l)/dn(a,n,m,l);
+			s = l - DAMPING * correction;  // Apply dampening to the correction
+			v = l;
+			l = s;
+			iter++;
+            //cout << "i = " << i << ", fabs(l-v) = " << fabs(l-v) << ", iterations: " << iter << endl;
+			if (iter > MAX_ITER) {
+				cout << "Warning: Maximum iterations reached for i = " << i << ". Using best value found for fabs(l-v): " << fabs(l-v) <<  endl;
+				break;
+			}
 		}
 		while(fabs(l-v)>0.0000000000000001);
 		y[i]=l;
 		w[i]=2/((1-pow(l,2))*(dn(a,n,m,l)*dn(a,n,m,l)));
 	}
+
+
+    //cout << "N1:Am I out of the while?" << endl;
 
 	for(i=0;i<n;i++)
 	{
@@ -202,6 +241,7 @@ double Integral::N1(double c, double d)
 
 double Integral::N2(double c, double d)
 {
+    //cout << "I entered N2!" << endl;
 	int n,m,i,N;
 	
 	n = 10;
@@ -255,11 +295,20 @@ double Integral::N2(double c, double d)
 	{
 		z[i]=cos(3.14*(i+0.75)/(n+0.5));
 		l=z[i];
+		int iter = 0;
+		const int MAX_ITER = 1000;  // Maximum number of iterations
+		const double DAMPING = 1;  // Dampening factor to reduce oscillations
 		do
 		{
-			s=l-(pn(a,n,m,l)/dn(a,n,m,l));
-			v=l;
-			l=s;
+			double correction = pn(a,n,m,l)/dn(a,n,m,l);
+			s = l - DAMPING * correction;  // Apply dampening to the correction
+			v = l;
+			l = s;
+			iter++;
+			if (iter > MAX_ITER) {
+				cout << "Warning: Maximum iterations reached for i = " << i << ". Using best value found for fabs(l-v): " << fabs(l-v) <<  endl;
+				break;
+			}
 		}
 		while(fabs(l-v)>0.0000000000000001);
 		y[i]=l;
@@ -382,4 +431,3 @@ double Integral::N2(double c, double d)
     // // return v;
 
 // // }
-

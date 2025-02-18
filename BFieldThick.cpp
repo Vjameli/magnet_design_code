@@ -12,6 +12,10 @@ BFieldThick::BFieldThick(double J0, double r0, double dr, double dz, double Xt, 
 {
 #define PI (3.14159265358979311599796346854418516)
 
+        //cout << "BFieldThick constructor parameters:" << endl;
+        //cout << "J0=" << J0 << " r0=" << r0 << " dr=" << dr << " dz=" << dz << endl;
+        //cout << "Xt=" << Xt << " Zt=" << Zt << " xshift=" << xshift << " zshift=" << zshift << endl;
+
 // *************************
 // Coil located at CAX, (0,0,0)
 // J0 = current density - the same for all coils
@@ -42,16 +46,19 @@ BFieldThick::BFieldThick(double J0, double r0, double dr, double dz, double Xt, 
 		Polar(x, 0, z1, r, theta, z);
 
         if (r >= 0.000001){ 
+            cout << "I am bigger than r: defining objects" << endl;
 			Integral* int1;
 			Integral* int2;
 			Integral* int3;
 			Integral* int4;
 			
+//            cout << "Defining more objects" << endl;
 			int1 = new Integral(r0+dr/2,-dz/2,r,z);
 			int2 = new Integral(r0-dr/2,-dz/2,r,z);
 			int3 = new Integral(r0+dr/2,dz/2,r,z);
 			int4 = new Integral(r0-dr/2,dz/2,r,z);
 			
+  //          cout << "First double" << endl;
 			double dAdz = int1->N1(0.0, PI) - int2->N1(0.0, PI) - int3->N1(0.0, PI) + int4->N1(0.0, PI);
             //dAdz = N1Integral(r0+dr/2,-dz/2,r,z) - N1Integral(r0-dr/2,-dz/2,r,z) - N1Integral(r0+dr/2,dz/2,r,z) + N1Integral(r0-dr/2,dz/2,r,z);
 			//double a1 = int3->N2(0.0, PI);
@@ -60,15 +67,20 @@ BFieldThick::BFieldThick(double J0, double r0, double dr, double dz, double Xt, 
 			//double a4 = int2->N2(0.0, PI);
 			
 			
+            //cout << "Second double" << endl;
 			double dAdr = int3->N2(0.0, PI) - int4->N2(0.0, PI) - int1->N2(0.0, PI) + int2->N2(0.0, PI);
 			//dAdr = N2Integral(r0+dr/2,dz/2,r,z) - N2Integral(r0-dr/2,dz/2,r,z) - N2Integral(r0+dr/2,-dz/2,r,z) + N2Integral(r0-dr/2,-dz/2,r,z);
             
+            //cout << "Br" << endl;
             Br = -C0*(x/r)*dAdz;
 //             By(in1,in2) = -C0*(y/r)*dAdz;
+
+            //cout << "Bz" << endl;
             Bz = (C0/r)*dAdr;
 		}
         else
 			if (r < 0.000001){
+            //cout << "I am smaller than r" << endl;
             Br = 0;
 //             By(in1,in2) = 0;
             
