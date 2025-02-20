@@ -1,0 +1,27 @@
+CompileFlags:
+  Add: 
+    - "-I/opt/ibm/ILOG/CPLEX_Studio2211/cplex/include"
+    - "-I/opt/ibm/ILOG/CPLEX_Studio2211/concert/include"
+    - "-DNDEBUG"
+    - "-DIL_STD"
+    - "-std=c++0x"
+    - "-Wall"
+    - "-m64"
+    - "-fno-strict-aliasing"
+  Remove: 
+    - "-W*"
+    - "-std=*"
+Index:
+  Background: Build
+  StandardLibrary: Yes
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Add: 
+      - performance-*
+      - bugprone-*
+    Remove: "*"
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes

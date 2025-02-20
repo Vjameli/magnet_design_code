@@ -46,7 +46,7 @@ BFieldThick::BFieldThick(double J0, double r0, double dr, double dz, double Xt, 
 		Polar(x, 0, z1, r, theta, z);
 
         if (r >= 0.000001){ 
-            cout << "I am bigger than r: defining objects" << endl;
+            //cout << "I am bigger than r: defining objects" << endl;
 			Integral* int1;
 			Integral* int2;
 			Integral* int3;
