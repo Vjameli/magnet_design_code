@@ -42,6 +42,7 @@ string IntToStr(int n)
 int main()
 {
 	
+
 	double B_zero = 0.5;    // [T] - Magnetic field to achieve
 	double tol = 10e-6;    // Magnetic field homogeneity tolerance
 
@@ -55,12 +56,12 @@ int main()
 	double zmax = 42;
 	double rmin = 10;	// [cm] r-domain
 	double rmax = 48;
-	double step = 2;
+	double step = 6; // BIGGER STEP -> LESS COILS (it was 2 before)
 
 	
 	
 	// ***** Define the Nt target points *****
-	int nbPoints = 40;
+	int nbPoints = 2; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
 	vector<double> Xtarget;
 	vector<double> Ytarget;
 	vector<double> PolarR;
@@ -108,7 +109,9 @@ int main()
 		Xt[i]= abs(Xtarget[i]);
 	
 	int Nt = Zt.size();	
+    cout << "Nt: " << Nt << endl;
 	
+
 	// Sampling a set of point inside the target volume
 	Ellipse *ellipse2;
 	vector<double> Zt_in;
@@ -121,6 +124,7 @@ int main()
 	Xt_in.insert(Xt_in.end(), Xtarget.begin(), Xtarget.end());	
 	}
 	int Nt_in = Zt_in.size();
+
 	
 	vector<double> NPZ;		//North pole Z
 	vector<double> NPR;		//North pole R
@@ -138,7 +142,6 @@ int main()
 		}
 	zc0 = zc0 + step;	
 	}
-
 
 
 	vector<double> CoilsZ;
@@ -218,12 +221,16 @@ int main()
 
 				AMNS[m][n][s] = Bz;
 
+                if (m == 1 ){
+                }
 			}
 		}
 	} 
 	
 	delete field; 	
 	
+    cout << "Excel stuff" << endl;
+
 	ofstream ExcelFile3;
     ExcelFile3.open("AMNS.csv");
 	 
@@ -417,6 +424,7 @@ do {
 		 }
 	 }
 
+    //cout << "Defining some more vectors" << endl;
 
 		vector<vector<double> > BzMatrix;
 		vector<vector<double> > BxMatrix;
@@ -431,6 +439,7 @@ do {
 			}
 		}
 		
+    //cout << "Some other stuff" << endl;
 	 
 	  	double XMIN = 0.0;
 		double ZMIN = -0.3;
@@ -443,6 +452,8 @@ do {
 			for(int j = 0; j < 66; j++)
 				B_MATRIX[i][j] = 0;
 		
+    //cout << "More other stuff with the matrix" << endl;
+    cout << "Nc = " << Nc << endl;
 	 	 for(int n = 0; n < Nc; n++){
 		 for(int s = 0; s < Ns; s++){
 			 if (SOL[n][s]* 1e7> 1 || -SOL[n][s]* 1e7> 1){
@@ -457,17 +468,22 @@ do {
 				//double Bz = 0;
 				//double Br = 0;
 				double J = SOL[n][s] * 1e7/cross_sections[s];
+
 				BFieldThick_Matrix *field_Matrix;
+                //cout << "maybe the problem is in here???????" << endl;
 				field_Matrix = new BFieldThick_Matrix(J, CoilsR[n], widths[s], widths[s]/Gamma, XMIN, ZMIN, XMAX, ZMAX, 0, CoilsZ[n], STEP, BzMatrix, BxMatrix);
+                //cout << "Probably here" << endl;
 					for(int i = 0; i < 61; i++)
 						for(int j = 0; j < 66; j++)
 							B_MATRIX[i][j] = B_MATRIX[i][j] + BzMatrix[i][j];
 				delete field_Matrix;
 			 }
 			 }
+                cout << "n = " << n << endl;
 		 } 
 	 
 	 
+    cout << "Now the dense excel starts again" << endl;
 	 ofstream ExcelFile2;
      ExcelFile2.open("FieldTotal_Matrix.csv");
 		for(int i = 0; i < 61; i++){
@@ -579,7 +595,6 @@ do {
        	 }         
      ExcelFile4.close();
 	 
-
  ofstream ExcelFile5;
      ExcelFile5.open("SmallestCoils.csv");
     
@@ -616,7 +631,7 @@ do {
      }
 	
      ExcelFile6.close();	 
-
+    cout << "CODE IS DONE!!" << endl;
 	return 0;
 }
 
