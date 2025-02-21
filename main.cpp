@@ -56,12 +56,12 @@ int main()
 	double zmax = 42;
 	double rmin = 10;	// [cm] r-domain
 	double rmax = 48;
-	double step = 2; // BIGGER STEP -> LESS COILS (it was 2 before)
+	double step = 10; // BIGGER STEP -> LESS COILS (it was 2 before)
 
 	
 	
 	// ***** Define the Nt target points *****
-	int nbPoints = 40; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
+	int nbPoints = 5; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
 	vector<double> Xtarget;
 	vector<double> Ytarget;
 	vector<double> PolarR;
@@ -109,7 +109,6 @@ int main()
 		Xt[i]= abs(Xtarget[i]);
 	
 	int Nt = Zt.size();	
-    //cout << "Nt: " << Nt << endl;
 	
 
 	// Sampling a set of point inside the target volume
@@ -153,9 +152,9 @@ int main()
 	int Nc = CoilsZ.size();
 	
 	
-	//Set of potential cross sections (Potential widths)
+	//Set of potential cross sections (Potential widths) // VALUE WAS ORIGINALLY EQUAL TO 5!!!!!!!!!! <------- 
 	vector<double> widths;
-	for(int value = 5; value <= 100; value += 5)
+	for(int value = 50; value <= 100; value += 5)
 		widths.push_back(value/1000.0);
     
 
@@ -424,7 +423,6 @@ do {
 		 }
 	 }
 
-    //cout << "Defining some more vectors" << endl;
 
 		vector<vector<double> > BzMatrix;
 		vector<vector<double> > BxMatrix;
@@ -439,7 +437,6 @@ do {
 			}
 		}
 		
-    //cout << "Some other stuff" << endl;
 	 
 	  	double XMIN = 0.0;
 		double ZMIN = -0.3;
@@ -452,8 +449,6 @@ do {
 			for(int j = 0; j < 66; j++)
 				B_MATRIX[i][j] = 0;
 		
-    //cout << "More other stuff with the matrix" << endl;
-    //cout << "Nc = " << Nc << endl;
 	 	 for(int n = 0; n < Nc; n++){
 		 for(int s = 0; s < Ns; s++){
 			 if (SOL[n][s]* 1e7> 1 || -SOL[n][s]* 1e7> 1){
@@ -470,20 +465,16 @@ do {
 				double J = SOL[n][s] * 1e7/cross_sections[s];
 
 				BFieldThick_Matrix *field_Matrix;
-                //cout << "maybe the problem is in here???????" << endl;
 				field_Matrix = new BFieldThick_Matrix(J, CoilsR[n], widths[s], widths[s]/Gamma, XMIN, ZMIN, XMAX, ZMAX, 0, CoilsZ[n], STEP, BzMatrix, BxMatrix);
-                //cout << "Probably here" << endl;
 					for(int i = 0; i < 61; i++)
 						for(int j = 0; j < 66; j++)
 							B_MATRIX[i][j] = B_MATRIX[i][j] + BzMatrix[i][j];
 				delete field_Matrix;
 			 }
 			 }
-                cout << "n = " << n << endl;
 		 } 
 	 
 	 
-    //cout << "Now the dense excel starts again" << endl;
 	 ofstream ExcelFile2;
      ExcelFile2.open("FieldTotal_Matrix.csv");
 		for(int i = 0; i < 61; i++){

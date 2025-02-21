@@ -1,10 +1,12 @@
-OBJECTIVE VALUE: 3.8
-Total Duration: 0.09
-Peak2Peak on the surface of the volums: 0
-RMS on the surface of the volums: 0.499995
-Peak2Peak over the sampling inside and on the surface of the volums: 384536
-RMS over the sampling inside and on the surface of the volums: 0.28974
-0, 0.1, 0.34, 375000, 0.05, 0.0357142857
-1, 0.16, 0.34, 13385.0699, 0.01, 0.00714285714
-14, 0.1, -0.34, 375000, 0.05, 0.0357142857
-15, 0.16, -0.34, 13385.0699, 0.01, 0.00714285714
+OBJECTIVE VALUE: 38
+Total Duration: 0.11
+Peak2Peak on the surface of the volums: 10.0414
+RMS on the surface of the volums: 0.500001
+Peak2Peak over the sampling inside and on the surface of the volums: 33074.2
+RMS over the sampling inside and on the surface of the volums: 0.494645
+0, 0.1, 0.34, 331533.774, 0.05, 0.0357142857
+1, 0.2, 0.34, -449916.139, 0.06, 0.0428571429
+3, 0.4, 0.34, 549086.334, 0.065, 0.0464285714
+4, 0.1, -0.34, 375000, 0.05, 0.0357142857
+5, 0.2, -0.34, -505467.07, 0.06, 0.0428571429
+7, 0.4, -0.34, 585998.071, 0.065, 0.0464285714
