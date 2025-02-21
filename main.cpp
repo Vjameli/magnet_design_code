@@ -56,12 +56,12 @@ int main()
 	double zmax = 42;
 	double rmin = 10;	// [cm] r-domain
 	double rmax = 48;
-	double step = 6; // BIGGER STEP -> LESS COILS (it was 2 before)
+	double step = 2; // BIGGER STEP -> LESS COILS (it was 2 before)
 
 	
 	
 	// ***** Define the Nt target points *****
-	int nbPoints = 2; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
+	int nbPoints = 40; //IM PUTTING A SMALL VALUE HERE JUST FOR TESTING! (it was 40 before)
 	vector<double> Xtarget;
 	vector<double> Ytarget;
 	vector<double> PolarR;
@@ -109,7 +109,7 @@ int main()
 		Xt[i]= abs(Xtarget[i]);
 	
 	int Nt = Zt.size();	
-    cout << "Nt: " << Nt << endl;
+    //cout << "Nt: " << Nt << endl;
 	
 
 	// Sampling a set of point inside the target volume
@@ -119,9 +119,9 @@ int main()
 	Zt_in.push_back(0);
 	Xt_in.push_back(0);
 	for (int k = 1; k < 5; k++){
-	ellipse2 = new Ellipse(0, 0, k * 0.25 * 0.2, k * 0.25 * 0.2, 0, nbPoints, Xtarget, Ytarget, PolarR, PolarTheta);	
-	Zt_in.insert(Zt_in.end(), Ytarget.begin(), Ytarget.end());
-	Xt_in.insert(Xt_in.end(), Xtarget.begin(), Xtarget.end());	
+        ellipse2 = new Ellipse(0, 0, k * 0.25 * 0.2, k * 0.25 * 0.2, 0, nbPoints, Xtarget, Ytarget, PolarR, PolarTheta);	
+        Zt_in.insert(Zt_in.end(), Ytarget.begin(), Ytarget.end());
+        Xt_in.insert(Xt_in.end(), Xtarget.begin(), Xtarget.end());	
 	}
 	int Nt_in = Zt_in.size();
 
@@ -453,7 +453,7 @@ do {
 				B_MATRIX[i][j] = 0;
 		
     //cout << "More other stuff with the matrix" << endl;
-    cout << "Nc = " << Nc << endl;
+    //cout << "Nc = " << Nc << endl;
 	 	 for(int n = 0; n < Nc; n++){
 		 for(int s = 0; s < Ns; s++){
 			 if (SOL[n][s]* 1e7> 1 || -SOL[n][s]* 1e7> 1){
@@ -483,7 +483,7 @@ do {
 		 } 
 	 
 	 
-    cout << "Now the dense excel starts again" << endl;
+    //cout << "Now the dense excel starts again" << endl;
 	 ofstream ExcelFile2;
      ExcelFile2.open("FieldTotal_Matrix.csv");
 		for(int i = 0; i < 61; i++){
