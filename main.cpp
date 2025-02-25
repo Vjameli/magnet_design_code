@@ -284,6 +284,17 @@ void compute_magnetic_field_matrix(const vector<vector<double>> &SOL, int Nc,
   }
 }
 
+void matrix_to_excel(const double B_MATRIX[61][66], const string &filename) {
+  ofstream ExcelFile;
+  ExcelFile.open(filename);
+  for (int i = 0; i < 61; i++) {
+    for (int j = 0; j < 66; j++)
+      ExcelFile << setprecision(9) << B_MATRIX[i][j] << ", ";
+    ExcelFile << endl;
+  }
+  ExcelFile.close();
+}
+
 int main() {
 
   cout << "Main is working" << endl;
@@ -364,8 +375,8 @@ int main() {
   vector<double> CoilsZ;
   vector<double> CoilsR;
   CoilsZ = NPZ;
-  CoilsZ.insert(CoilsZ.end(), SPZ.begin(), SPZ.end());
   CoilsR = NPR;
+  CoilsZ.insert(CoilsZ.end(), SPZ.begin(), SPZ.end());
   CoilsR.insert(CoilsR.end(), SPR.begin(), SPR.end());
   int Nc = CoilsZ.size();
 
@@ -444,12 +455,6 @@ int main() {
     double B[Nt];
     evaluate_solution_border(SOL, AMNS, Nt, Nc, Ns, B);
 
-    for (int m = 0; m < Nt; m++) {
-      cout << m << " " << B[m] << endl;
-      if (B[m] > B_zero * (1 + tol) || B[m] < B_zero * (1 - tol))
-        cout << "******" << endl;
-    }
-
     // Compute the resultant magnetic field from the solution inside the FOV.
     double B_in[Nt_in];
     evaluate_solution_inside(SOL, Nt_in, Nc, Ns, Xt_in, Zt_in, CoilsR, CoilsZ,
@@ -476,16 +481,8 @@ int main() {
                                 B_MATRIX);
 
   // Write the magnetic field matrix to a CSV file
-  ofstream ExcelFile2;
-  ExcelFile2.open("FieldTotal_Matrix.csv");
-  for (int i = 0; i < 61; i++) {
-    for (int j = 0; j < 66; j++)
-      ExcelFile2 << setprecision(9) << B_MATRIX[i][j] << ", ";
-    ExcelFile2 << endl;
-  }
-  ExcelFile2.close();
+  matrix_to_excel(B_MATRIX, "FieldTotal_Matrix.csv");
 
-  // Do the same thing over again for the final solution of the optimization
   cout << "CODE IS DONE!!" << endl;
   return 0;
 }
