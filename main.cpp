@@ -13,7 +13,6 @@ ILOSTLBEGIN
 #include "BFieldThick_Matrix.h"
 #include "Ellipse.h"
 #include "Model2.h"
-#include "supplementary_functions.h"
 #include "tempsC++.h"
 #include <algorithm>
 #include <cmath>
@@ -28,6 +27,31 @@ ILOSTLBEGIN
 #include <vector>
 
 using namespace std;
+
+std::string IntToStr(int n) {
+  std::stringstream result;
+  result << n;
+  return result.str();
+}
+
+void initializeTargetPoints(int nbPoints, std::vector<double> &Xtarget,
+                            std::vector<double> &Ytarget,
+                            std::vector<double> &PolarR,
+                            std::vector<double> &PolarTheta) {
+  // Resize vectors
+  Xtarget.resize(nbPoints);
+  Ytarget.resize(nbPoints);
+  PolarR.resize(nbPoints);
+  PolarTheta.resize(nbPoints);
+
+  // Initialize arrays with zeros
+  for (int i = 0; i < nbPoints; i++) {
+    Xtarget[i] = 0;
+    Ytarget[i] = 0;
+    PolarR[i] = 0;
+    PolarTheta[i] = 0;
+  }
+}
 
 void sample_ellipse_border(int nbPoints, std::vector<double> &Xtarget,
                            std::vector<double> &Ytarget,
@@ -100,26 +124,164 @@ void AMNS_to_excel(const vector<vector<vector<double>>> &AMNS, int Nt, int Nc,
   ExcelFile3.close();
 }
 
-void evaluate_solution_border(const vector<vector<double>>& SOL, 
-                            const vector<vector<vector<double>>>& AMNS,
-                            int Nt, int Nc, int Ns,
-                            double* B) {
-    // Initialize B array with zeros
-    for (int i = 0; i < Nt; i++) {
-        B[i] = 0;
-    }
+void evaluate_solution_border(const vector<vector<double>> &SOL,
+                              const vector<vector<vector<double>>> &AMNS,
+                              int Nt, int Nc, int Ns, double *B) {
+  // Initialize B array with zeros
+  for (int i = 0; i < Nt; i++) {
+    B[i] = 0;
+  }
 
-    // Compute the resultant magnetic field from the solution on the border of the FOV
-    for (int n = 0; n < Nc; n++) {
-        for (int s = 0; s < Ns; s++) {
-            if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-                for (int m = 0; m < Nt; m++) {
-                    double Bz = AMNS[m][n][s] * SOL[n][s];
-                    B[m] = B[m] + Bz;
-                }
-            }
+  // Compute the resultant magnetic field from the solution on the border of the
+  // FOV
+  for (int n = 0; n < Nc; n++) {
+    for (int s = 0; s < Ns; s++) {
+      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
+        for (int m = 0; m < Nt; m++) {
+          double Bz = AMNS[m][n][s] * SOL[n][s];
+          B[m] = B[m] + Bz;
         }
+      }
     }
+  }
+}
+
+void evaluate_solution_inside(const vector<vector<double>> &SOL, int Nt_in,
+                              int Nc, int Ns, const vector<double> &Xt_in,
+                              const vector<double> &Zt_in,
+                              const vector<double> &CoilsR,
+                              const vector<double> &CoilsZ,
+                              const vector<double> &widths,
+                              const vector<double> &cross_sections,
+                              double Gamma, double *B_in) {
+  // Initialize B_in array
+  for (int i = 0; i < Nt_in; i++)
+    B_in[i] = 0;
+
+  // Compute the resultant magnetic field from the solution inside the FOV
+  BFieldThick *field2;
+  for (int m = 0; m < Nt_in; m++) {
+    for (int n = 0; n < Nc; n++) {
+      for (int s = 0; s < Ns; s++) {
+        if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
+          double Bz = 0;
+          double Br = 0;
+          double J = SOL[n][s] * 1e7 / cross_sections[s];
+          field2 = new BFieldThick(J, CoilsR[n], widths[s], widths[s] / Gamma,
+                                   Xt_in[m], Zt_in[m], 0, CoilsZ[n], Bz, Br);
+          B_in[m] = B_in[m] + Bz;
+        }
+      }
+    }
+  }
+}
+
+double compute_Peak2peak(const double *B, int Nt, double B_zero) {
+  double min_B = 10;
+  double max_B = -10;
+  for (int m = 0; m < Nt; m++) {
+    if (B[m] < min_B)
+      min_B = B[m];
+    if (B[m] > max_B)
+      max_B = B[m];
+  }
+  return 1e6 * ((max_B - B_zero) + (B_zero - min_B));
+}
+
+double compute_RMS(const double *B, int Nt) {
+  double sum_square = 0;
+  for (int m = 0; m < Nt; m++) {
+    sum_square += B[m] * B[m];
+  }
+  return sqrt(sum_square / Nt);
+}
+
+void write_outFile(const string &filename, double objValue, double duration,
+                   double Peak2Peak, double RMS, double Peak2Peak_in,
+                   double RMS_in, const vector<vector<double>> &SOL,
+                   const vector<double> &CoilsR, const vector<double> &CoilsZ,
+                   const vector<double> &widths, double Gamma, int Ns) {
+  ofstream outFile;
+  outFile.open(filename.c_str());
+  outFile << "OBJECTIVE VALUE: " << objValue << endl;
+  outFile << "Total Duration: " << duration << endl;
+  outFile << "Peak2Peak on the surface of the volums: " << Peak2Peak << endl;
+  outFile << "RMS on the surface of the volums: " << RMS << endl;
+  outFile
+      << "Peak2Peak over the sampling inside and on the surface of the volums: "
+      << Peak2Peak_in << endl;
+  outFile << "RMS over the sampling inside and on the surface of the volums: "
+          << RMS_in << endl;
+  for (unsigned int n = 0; n < CoilsR.size(); n++) {
+    for (int s = 0; s < Ns; s++) {
+      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
+        outFile << n << ", " << CoilsR[n] << ", " << CoilsZ[n] << ", "
+                << setprecision(9) << SOL[n][s] * 1e7 << ", " << widths[s]
+                << ", " << widths[s] / Gamma << endl;
+      }
+    }
+  }
+  outFile.close();
+}
+
+void print_outFile(const vector<vector<double>> &SOL, int Nc, int Ns,
+                   const vector<double> &CoilsR, const vector<double> &CoilsZ,
+                   const vector<double> &widths, double Gamma, double objValue,
+                   double duration) {
+  cout << "OBJECTIVE VALUE: " << objValue << endl;
+  cout << "*** Total Duration: " << duration << endl;
+  for (int n = 0; n < Nc; n++) {
+    for (int s = 0; s < Ns; s++) {
+      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
+        cout << "N: " << n << ", Zn: " << CoilsZ[n] << ", Rn: " << CoilsR[n]
+             << ", Current: " << SOL[n][s] * 1e7 << ", W: " << widths[s]
+             << ", H: " << widths[s] / Gamma << endl;
+      }
+    }
+  }
+}
+
+void compute_magnetic_field_matrix(const vector<vector<double>> &SOL, int Nc,
+                                   int Ns, const vector<double> &CoilsR,
+                                   const vector<double> &CoilsZ,
+                                   const vector<double> &widths, double Gamma,
+                                   const vector<double> &cross_sections,
+                                   double XMIN, double ZMIN, double XMAX,
+                                   double ZMAX, double STEP,
+                                   double B_MATRIX[61][66]) {
+  vector<vector<double>> BzMatrix(61, vector<double>(66, 0));
+  vector<vector<double>> BxMatrix(61, vector<double>(66, 0));
+
+  // Initialize B_MATRIX
+  for (int i = 0; i < 61; i++)
+    for (int j = 0; j < 66; j++)
+      B_MATRIX[i][j] = 0;
+
+  for (int n = 0; n < Nc; n++) {
+    for (int s = 0; s < Ns; s++) {
+      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
+        // Reset BzMatrix and BxMatrix
+        for (int i = 0; i < 61; i++)
+          for (int j = 0; j < 66; j++) {
+            BzMatrix[i][j] = 0;
+            BxMatrix[i][j] = 0;
+          }
+
+        double J = SOL[n][s] * 1e7 / cross_sections[s];
+
+        BFieldThick_Matrix *field_Matrix = new BFieldThick_Matrix(
+            J, CoilsR[n], widths[s], widths[s] / Gamma, XMIN, ZMIN, XMAX, ZMAX,
+            0, CoilsZ[n], STEP, BzMatrix, BxMatrix);
+
+        // Accumulate results in B_MATRIX
+        for (int i = 0; i < 61; i++)
+          for (int j = 0; j < 66; j++)
+            B_MATRIX[i][j] += BzMatrix[i][j];
+
+        delete field_Matrix;
+      }
+    }
+  }
 }
 
 int main() {
@@ -249,7 +411,6 @@ int main() {
   vector<vector<vector<double>>> SOL_VECTOR;
 
   // Here, I removed the while loop for now.
-  // do {
   cout << "************** NBCOILS = " << NbCoils << " **************" << endl;
   duration = 0;
   ChronoCPU chrono;
@@ -266,6 +427,8 @@ int main() {
   if (design->getCplexStatus() != IloAlgorithm::Infeasible &&
       design->getCplexStatus() != IloAlgorithm::InfeasibleOrUnbounded) {
 
+    // Just in case we run the optimization many times and need to store more
+    // than one result
     design->getSol(SOL);
     SOL_VECTOR.push_back(SOL);
     CPUs.push_back(duration);
@@ -288,143 +451,29 @@ int main() {
     }
 
     // Compute the resultant magnetic field from the solution inside the FOV.
-    BFieldThick *field2;
     double B_in[Nt_in];
-    for (int i = 0; i < Nt_in; i++)
-      B_in[i] = 0;
-    for (int m = 0; m < Nt_in; m++) {
-      for (int n = 0; n < Nc; n++) {
-        for (int s = 0; s < Ns; s++) {
-          if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-            double Bz = 0;
-            double Br = 0;
-            double J = SOL[n][s] * 1e7 / cross_sections[s];
-            field2 = new BFieldThick(J, CoilsR[n], widths[s], widths[s] / Gamma,
-                                     Xt_in[m], Zt_in[m], 0, CoilsZ[n], Bz, Br);
-            B_in[m] = B_in[m] + Bz;
-          }
-        }
-      }
-    }
+    evaluate_solution_inside(SOL, Nt_in, Nc, Ns, Xt_in, Zt_in, CoilsR, CoilsZ,
+                             widths, cross_sections, Gamma, B_in);
 
     // Peak to peak on the border and inside of the FOV
     // RMS on the border and inside of the FOV
-    double min_B = 10;
-    double max_B = -10;
-    double sum_square = 0;
-    for (int m = 0; m < Nt; m++) {
-      if (B[m] < min_B)
-        min_B = B[m];
-      if (B[m] > max_B)
-        max_B = B[m];
-      sum_square += B[m] * B[m];
-    }
+    double Peak2Peak_in = compute_Peak2peak(B_in, Nt_in, B_zero);
+    double RMS_in = compute_RMS(B_in, Nt_in);
+    double Peak2Peak = compute_Peak2peak(B, Nt, B_zero);
+    double RMS = compute_RMS(B, Nt);
 
-    double min_B_in = 10;
-    double max_B_in = -10;
-    double sum_square_in = 0;
-    for (int m = 0; m < Nt_in; m++) {
-      if (B_in[m] < min_B_in)
-        min_B_in = B_in[m];
-      if (B_in[m] > max_B_in)
-        max_B_in = B_in[m];
-      sum_square_in += B_in[m] * B_in[m];
-    }
-
-    double Peak2Peak_in = 1e6 * ((max_B_in - 0.5) + (0.5 - min_B_in));
-    double RMS_in = sqrt(sum_square_in / Nt_in);
-    double Peak2Peak = 1e6 * ((max_B - 0.5) + (0.5 - min_B));
-    double RMS = sqrt(sum_square / Nt);
-
-    outFile.open(filename.c_str());
-    outFile << "OBJECTIVE VALUE: " << design->getObjValue() << endl;
-    outFile << "Total Duration: " << duration << endl;
-    outFile << "Peak2Peak on the surface of the volums: " << Peak2Peak << endl;
-    outFile << "RMS on the surface of the volums: " << RMS << endl;
-    outFile << "Peak2Peak over the sampling inside and on the surface of the "
-               "volums: "
-            << Peak2Peak_in << endl;
-    outFile << "RMS over the sampling inside and on the surface of the volums: "
-            << RMS_in << endl;
-    for (unsigned int n = 0; n < CoilsR.size(); n++)
-      for (int s = 0; s < Ns; s++) {
-        if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-          outFile << n << ", " << CoilsR[n] << ", " << CoilsZ[n] << ", "
-                  << setprecision(9) << SOL[n][s] * 1e7 << ", " << widths[s]
-                  << ", " << widths[s] / Gamma << endl;
-        }
-      }
-    outFile.close();
+    write_outFile(filename, design->getObjValue(), duration, Peak2Peak, RMS,
+                  Peak2Peak_in, RMS_in, SOL, CoilsR, CoilsZ, widths, Gamma, Ns);
   }
-  // NbCoils--;
 
-  //  } while ((design->getCplexStatus() != IloAlgorithm::Infeasible &&
-  //            design->getCplexStatus() != IloAlgorithm::InfeasibleOrUnbounded)
-  //            &&
-  //           NbCoils > 6);
-
-  cout << "OBJECTIVE VALUE: " << design->getObjValue() << endl;
-  cout << "*** Total Duration: " << duration << endl;
-  for (int n = 0; n < Nc; n++) {
-    for (int s = 0; s < Ns; s++) {
-      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-        cout << "N: " << n << ", Zn: " << CoilsZ[n] << ", Rn: " << CoilsR[n]
-             << ", Current: " << SOL[n][s] * 1e7 << ", W: " << widths[s]
-             << ", H: " << widths[s] / Gamma << endl;
-      }
-    }
-  }
+  print_outFile(SOL, Nc, Ns, CoilsR, CoilsZ, widths, Gamma,
+                design->getObjValue(), duration);
 
   // Compute the magnetic field matrix
-  vector<vector<double>> BzMatrix;
-  vector<vector<double>> BxMatrix;
-  BzMatrix.resize(61);
-  BxMatrix.resize(61);
-  for (int i = 0; i < 61; i++) {
-    BzMatrix[i].resize(66);
-    BxMatrix[i].resize(66);
-    for (int j = 0; j < 66; j++) {
-      BzMatrix[i][j] = 0;
-      BxMatrix[i][j] = 0;
-    }
-  }
-
-  double XMIN = 0.0;
-  double ZMIN = -0.3;
-  double XMAX = 0.65;
-  double ZMAX = 0.3;
-  double STEP = 0.01;
-
   double B_MATRIX[61][66];
-  for (int i = 0; i < 61; i++)
-    for (int j = 0; j < 66; j++)
-      B_MATRIX[i][j] = 0;
-
-  for (int n = 0; n < Nc; n++) {
-    for (int s = 0; s < Ns; s++) {
-      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-
-        for (int i = 0; i < 61; i++)
-          for (int j = 0; j < 66; j++) {
-            BzMatrix[i][j] = 0;
-            BxMatrix[i][j] = 0;
-          }
-
-        // double Bz = 0;
-        // double Br = 0;
-        double J = SOL[n][s] * 1e7 / cross_sections[s];
-
-        BFieldThick_Matrix *field_Matrix;
-        field_Matrix = new BFieldThick_Matrix(
-            J, CoilsR[n], widths[s], widths[s] / Gamma, XMIN, ZMIN, XMAX, ZMAX,
-            0, CoilsZ[n], STEP, BzMatrix, BxMatrix);
-        for (int i = 0; i < 61; i++)
-          for (int j = 0; j < 66; j++)
-            B_MATRIX[i][j] = B_MATRIX[i][j] + BzMatrix[i][j];
-        delete field_Matrix;
-      }
-    }
-  }
+  compute_magnetic_field_matrix(SOL, Nc, Ns, CoilsR, CoilsZ, widths, Gamma,
+                                cross_sections, 0.0, -0.3, 0.65, 0.3, 0.01,
+                                B_MATRIX);
 
   // Write the magnetic field matrix to a CSV file
   ofstream ExcelFile2;
@@ -437,135 +486,6 @@ int main() {
   ExcelFile2.close();
 
   // Do the same thing over again for the final solution of the optimization
-  double B[Nt];
-  evaluate_solution_border(SOL, AMNS, Nt, Nc, Ns, B);
-
-  for (int m = 0; m < Nt; m++) {
-    cout << m << " " << B[m] << endl;
-    if (B[m] > B_zero * (1 + tol) || B[m] < B_zero * (1 - tol))
-      cout << "******" << endl;
-  }
-
-  BFieldThick *field2;
-  double B_in[Nt_in];
-  for (int i = 0; i < Nt_in; i++)
-    B_in[i] = 0;
-  for (int m = 0; m < Nt_in; m++) {
-    for (int n = 0; n < Nc; n++) {
-      for (int s = 0; s < Ns; s++) {
-        if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-          double Bz = 0;
-          double Br = 0;
-          double J = SOL[n][s] * 1e7 / cross_sections[s];
-          field2 = new BFieldThick(J, CoilsR[n], widths[s], widths[s] / Gamma,
-                                   Xt_in[m], Zt_in[m], 0, CoilsZ[n], Bz, Br);
-          B_in[m] = B_in[m] + Bz;
-        }
-      }
-    }
-  }
-
-  double min_B = 10;
-  double max_B = -10;
-  double sum_square = 0;
-  for (int m = 0; m < Nt; m++) {
-    if (B[m] < min_B)
-      min_B = B[m];
-    if (B[m] > max_B)
-      max_B = B[m];
-    sum_square += B[m] * B[m];
-  }
-
-  // Peak to Peak over the sample points inside the volume
-  // and also the computation of RMS
-  double min_B_in = 10;
-  double max_B_in = -10;
-  double sum_square_in = 0;
-  for (int m = 0; m < Nt_in; m++) {
-    if (B_in[m] < min_B_in)
-      min_B_in = B_in[m];
-    if (B_in[m] > max_B_in)
-      max_B_in = B_in[m];
-    sum_square_in += B_in[m] * B_in[m];
-  }
-
-  double Peak2Peak_in = 1e6 * ((max_B_in - 0.5) + (0.5 - min_B_in));
-  double RMS_in = sqrt(sum_square_in / Nt_in);
-  double Peak2Peak = 1e6 * ((max_B - 0.5) + (0.5 - min_B));
-  double RMS = sqrt(sum_square / Nt);
-
-  // model.
-  ofstream ExcelFile;
-  ExcelFile.open("Coils.csv");
-
-  for (unsigned int n = 0; n < CoilsR.size(); n++)
-    for (int s = 0; s < Ns; s++) {
-      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-        ExcelFile << n << ", " << CoilsR[n] << ", " << CoilsZ[n] << ", "
-                  << setprecision(9) << SOL[n][s] * 1e7 << ", " << widths[s]
-                  << ", " << widths[s] / Gamma << endl;
-      }
-    }
-  ExcelFile.close();
-
-  ofstream ExcelFile4;
-  ExcelFile4.open("Results.csv");
-  ExcelFile4 << "OBJECTIVE VALUE: " << design->getObjValue() << endl;
-  ExcelFile4 << "Total Duration: " << duration << endl;
-  ExcelFile4 << "Peak2Peak on the surface of the volums: " << Peak2Peak << endl;
-  ExcelFile4 << "RMS on the surface of the volums: " << RMS << endl;
-  ExcelFile4
-      << "Peak2Peak over the sampling inside and on the surface of the volums: "
-      << Peak2Peak_in << endl;
-  ExcelFile4
-      << "RMS over the sampling inside and on the surface of the volums: "
-      << RMS_in << endl;
-  for (unsigned int n = 0; n < CoilsR.size(); n++)
-    for (int s = 0; s < Ns; s++) {
-      if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 > 1) {
-        ExcelFile4 << n << ", " << CoilsR[n] << ", " << CoilsZ[n] << ", "
-                   << setprecision(9) << SOL[n][s] * 1e7 << ", " << widths[s]
-                   << ", " << widths[s] / Gamma << endl;
-      }
-    }
-  ExcelFile4.close();
-
-  ofstream ExcelFile5;
-  ExcelFile5.open("SmallestCoils.csv");
-
-  for (unsigned int i = 0; i < CPUs.size(); i++)
-    ExcelFile5 << NBCOILS[i] << ", ";
-  ExcelFile5 << endl;
-  for (unsigned int i = 0; i < CPUs.size(); i++)
-    ExcelFile5 << CPUs[i] << ", ";
-  ExcelFile5 << endl;
-  for (unsigned int i = 0; i < CPUs.size(); i++)
-    ExcelFile5 << OBJECTIVEs[i] << ", ";
-  ExcelFile5 << endl;
-
-  ExcelFile5.close();
-
-  vector<vector<vector<double>>>::iterator IterSOL;
-
-  ofstream ExcelFile6;
-  ExcelFile6.open("AllCoils.csv");
-  int cmp = 0;
-  for (IterSOL = SOL_VECTOR.begin(); IterSOL != SOL_VECTOR.end();
-       IterSOL++, cmp++) {
-    ExcelFile6 << "NBCOIL: " << NBCOILS[cmp] << endl;
-    for (unsigned int n = 0; n < CoilsR.size(); n++)
-      for (int s = 0; s < Ns; s++) {
-        if ((*IterSOL)[n][s] * 1e7 > 1 || -(*IterSOL)[n][s] * 1e7 > 1) {
-          ExcelFile6 << n << ", " << CoilsR[n] << ", " << CoilsZ[n] << ", "
-                     << setprecision(9) << (*IterSOL)[n][s] * 1e7 << ", "
-                     << widths[s] << ", " << widths[s] / Gamma << endl;
-        }
-      }
-
-    ExcelFile6 << "****************************" << endl;
-  }
-
-  ExcelFile6.close();
   cout << "CODE IS DONE!!" << endl;
   return 0;
 }
