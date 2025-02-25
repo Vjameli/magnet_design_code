@@ -1,9 +1,9 @@
 OBJECTIVE VALUE: 38
-Total Duration: 0.11
+Total Duration: 0.12
 Peak2Peak on the surface of the volums: 10.0414
 RMS on the surface of the volums: 0.500001
-Peak2Peak over the sampling inside and on the surface of the volums: 33074.2
-RMS over the sampling inside and on the surface of the volums: 0.494645
+Peak2Peak over the sampling inside and on the surface of the volums: 2274.03
+RMS over the sampling inside and on the surface of the volums: 0.499624
 0, 0.1, 0.34, 331533.774, 0.05, 0.0357142857
 1, 0.2, 0.34, -449916.139, 0.06, 0.0428571429
 3, 0.4, 0.34, 549086.334, 0.065, 0.0464285714
