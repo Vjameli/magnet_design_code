@@ -381,7 +381,8 @@ int main() {
       //         for(int n = 0; n<CoilsR.size(); n++)
       // 		 for(int s = 0; s<Ns; s++){
       // 			 if (SOL[n][s] * 1e7 > 1 || -SOL[n][s] * 1e7 >
-      // 1){ 				 outFile <<n<<", "<<CoilsR[n]<<", "<<CoilsZ[n]<<",
+      // 1){ 				 outFile <<n<<", "<<CoilsR[n]<<",
+      // "<<CoilsZ[n]<<",
       // "<<setprecision(9)<<SOL[n][s] * 1e7 <<", "<<widths[s]<<", " <<
       // widths[s]/Gamma<<endl;
       // 			 }
