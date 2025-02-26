@@ -16,7 +16,7 @@ typedef IloArray<IloArray<IloNumVarArray>> IloNumVarArray3;
 
 class Model2 {
 public:
-  Model2(IloEnv envir, vector<vector<vector<double>>> AMNS,
+  Model2(bool surpress_cplex, IloEnv envir, vector<vector<vector<double>>> AMNS,
          vector<double> CoilsR, vector<double> CoilsZ, double B_zero,
          double tol, vector<double> widths, vector<double> cross_sections,
          double CCD, double Gamma, double zmin, double zmax, double rmin,

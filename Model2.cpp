@@ -8,11 +8,12 @@
 
 #include "Model2.h"
 
-Model2::Model2(IloEnv envir, vector<vector<vector<double>>> AMNS,
-               vector<double> CoilsR, vector<double> CoilsZ, double B_zero,
-               double tol, vector<double> widths, vector<double> cross_sections,
-               double CCD, double Gamma, double zmin, double zmax, double rmin,
-               double rmax, double step, int NbCoils) {
+Model2::Model2(bool surpress_cplex, IloEnv envir,
+               vector<vector<vector<double>>> AMNS, vector<double> CoilsR,
+               vector<double> CoilsZ, double B_zero, double tol,
+               vector<double> widths, vector<double> cross_sections, double CCD,
+               double Gamma, double zmin, double zmax, double rmin, double rmax,
+               double step, int NbCoils) {
   env = envir;
   Nt = AMNS.size();
   Nc = AMNS[0].size();
@@ -177,7 +178,10 @@ Model2::Model2(IloEnv envir, vector<vector<vector<double>>> AMNS,
   cplex.setParam(IloCplex::NumericalEmphasis, 1);
   cplex.setParam(IloCplex::SimDisplay, 0);
   cplex.setParam(IloCplex::Threads, 1);
-  // cplex.setOut(env.getNullStream());
+
+  if (surpress_cplex) {
+    cplex.setOut(env.getNullStream());
+  }
 }
 
 Model2::~Model2() {

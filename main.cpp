@@ -77,7 +77,6 @@ int main() {
   int Nt = Zt.size();
 
   // Sampling a set of points inside the target volume
-  Ellipse *ellipse2;
   vector<double> Zt_in; // Stores the y target coordinates
   vector<double> Xt_in; // Stores the x target coordinates
   Zt_in.push_back(0);
@@ -139,7 +138,10 @@ int main() {
   ChronoCPU chrono;
   chrono.start();
 
-  design = new Model2(IloEnv(), AMNS, CoilsR, CoilsZ, B_zero, tol, widths,
+  // Suppress CPLEX output
+  bool surpress_cplex = false;
+
+  design = new Model2(surpress_cplex, IloEnv(), AMNS, CoilsR, CoilsZ, B_zero, tol, widths,
                       cross_sections, CCD, Gamma, zmin, zmax, rmin, rmax, step,
                       NbCoils);
 
